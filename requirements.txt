@@ -1,3 +1,8 @@
-# ==== For NVIDIA AI WORKBENCH Users Only! ====
-# See pyproject.toml for blueprint dependencies
-jupyterlab>3.0
+echo "nvidia-nat
+fastapi
+gradio
+requests
+faiss-cpu
+markdown
+beautifulsoup4
+uvicorn" > requirements.txt
