@@ -249,3 +249,7 @@ share/python-wheels/
 cover/
 
 # Workbench Project Layout
+
+.env
+*.pyc
+__pycache__
