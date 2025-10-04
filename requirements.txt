@@ -5,4 +5,5 @@ requests
 faiss-cpu
 markdown
 beautifulsoup4
-uvicorn" > requirements.txt
+uvicorn > requirements.txt
+python-dotenv > requirements.txt
