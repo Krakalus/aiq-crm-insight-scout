@@ -1,0 +1,16 @@
+nodes:
+  - name: plan
+    model: llama-3.1-nemotron-nano-8B-v1
+    endpoint: https://integrate.api.nvidia.com/v1/llama-3.1-nemotron-nano-8B-v1
+    task: "Break CRM goal into sub-queries"
+  - name: retrieve
+    tool: fastapi_retrieve
+    endpoint: "/retrieve"
+  - name: output
+    model: llama-3.1-nemotron-nano-8B-v1
+    endpoint: https://integrate.api.nvidia.com/v1/llama-3.1-nemotron-nano-8B-v1
+    task: "Generate CRM report"
+tools:
+  - name: fastapi_retrieve
+    type: api
+    url: "/retrieve"
