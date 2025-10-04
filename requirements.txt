@@ -7,3 +7,4 @@ markdown
 beautifulsoup4
 uvicorn > requirements.txt
 python-dotenv > requirements.txt
+langgraph langchain-openai > requirements.txt
