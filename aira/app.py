@@ -1,13 +1,14 @@
 import faiss
 import numpy as np
+import requests
 import markdown
 from bs4 import BeautifulSoup
-import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import gradio as gr
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()  # Load variables from .env file
 
@@ -38,21 +39,25 @@ dimension = 1024  # nv-embedqa-e5-v5 dimension
 index = faiss.IndexFlatL2(dimension)
 embeddings = []
 
-# NVIDIA API key (loaded from .env)
+# Initialize NVIDIA API client with .env key
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
 if not NVIDIA_API_KEY:
     raise HTTPException(status_code=500, detail="NVIDIA_API_KEY not set in .env")
+client = OpenAI(
+    api_key=NVIDIA_API_KEY,
+    base_url="https://integrate.api.nvidia.com/v1"
+)
 
-def get_embedding(text):
+def get_embedding(text, input_type="passage"):  # Default to "passage" for documents
     try:
-        response = requests.post(
-            "https://api.nvidia.com/nv-embedqa-e5-v5",
-            headers={"Authorization": f"Bearer {NVIDIA_API_KEY}"},
-            json={"text": text}
+        response = client.embeddings.create(
+            input=[text],
+            model="nvidia/nv-embedqa-e5-v5",
+            encoding_format="float",
+            extra_body={"input_type": input_type, "truncate": "END"}
         )
-        response.raise_for_status()
-        return np.array(response.json()["embedding"], dtype=np.float32)
-    except requests.RequestException as e:
+        return np.array(response.data[0].embedding, dtype=np.float32)
+    except Exception as e:
         raise HTTPException(status_code=500, detail=f"Embedding API error: {str(e)}")
 
 # Index documents
@@ -71,30 +76,38 @@ class Query(BaseModel):
 @app.post("/retrieve")
 async def retrieve(query: Query):
     try:
-        query_embedding = get_embedding(query.text)
+        query_embedding = get_embedding(query.text, input_type="query")
         distances, indices = index.search(np.array([query_embedding]), query.top_k)
         results = [texts[idx] for idx in indices[0]]
         return {"results": results}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Retrieval error: {str(e)}")
 
-# Placeholder for agent endpoint (Step 8)
+# Placeholder for agent endpoint
 @app.post("/agent")
 async def agent(goal: Query):
     return {"steps": "TBD", "output": "TBD"}
 
-# Gradio UI
+# Gradio UI function
 def run_agent(goal):
+    if not goal.strip():
+        return "Please enter a query."
     response = requests.post("http://localhost:8000/agent", json={"text": goal})
     result = response.json()
-    return result["steps"], result["output"]
+    return f"Steps: {result['steps']}\nOutput: {result['output']}"
 
+# Mount Gradio UI to FastAPI
 with gr.Blocks() as demo:
-    gr.Markdown("Agentic CRM Insight Scout")
-    goal = gr.Textbox(label="Enter CRM Goal")
-    steps = gr.Textbox(label="Agent Steps", interactive=False)
-    output = gr.Textbox(label="Results", interactive=False)
-    gr.Button("Run Agent").click(run_agent, inputs=goal, outputs=[steps, output])
+    gr.Markdown("# CRM Agent")
+    query_input = gr.Textbox(label="Enter Query", placeholder="e.g., Summarize contract terms")
+    output = gr.Textbox(label="Result", interactive=False, lines=5)
+    gr.Button("Submit").click(
+        fn=run_agent,
+        inputs=query_input,
+        outputs=output
+    )
+
+app = gr.mount_gradio_app(app, demo, path="/")
 
 if __name__ == "__main__":
     import uvicorn
