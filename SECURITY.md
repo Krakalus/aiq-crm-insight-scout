@@ -1,24 +1,41 @@
-## Security
+# Security Policy
 
-NVIDIA is dedicated to the security and trust of our software products and services, including all source code repositories managed through our organization.
+## Reporting Security Vulnerabilities
 
-If you need to report a security issue, please use the appropriate contact points outlined below. **Please do not report security vulnerabilities through GitHub.**
+**AIQ CRM Insight Scout** is a hackathon project focused on Agentic AI for CRM systems. Security is important, but as a prototype, it may contain vulnerabilities. Report issues responsibly.
 
-## Reporting Potential Security Vulnerability in an NVIDIA Product
+### How to Report
 
-To report a potential security vulnerability in any NVIDIA product:
-- Web: [Security Vulnerability Submission Form](https://www.nvidia.com/object/submit-security-vulnerability.html)
-- E-Mail: psirt@nvidia.com
-    - We encourage you to use the following PGP key for secure email communication: [NVIDIA public PGP Key for communication](https://www.nvidia.com/en-us/security/pgp-key)
-    - Please include the following information:
-   	 - Product/Driver name and version/branch that contains the vulnerability
-     - Type of vulnerability (code execution, denial of service, buffer overflow, etc.)
-   	 - Instructions to reproduce the vulnerability
-   	 - Proof-of-concept or exploit code
-   	 - Potential impact of the vulnerability, including how an attacker could exploit the vulnerability
+- **Do Not** report vulnerabilities via GitHub Issues or public channels.
+- Email the maintainer at [your-email@example.com] or open a private discussion on GitHub.
+- Provide details: Description, steps to reproduce, impact, and affected version (e.g., v1.0).
 
-While NVIDIA currently does not have a bug bounty program, we do offer acknowledgement when an externally reported security issue is addressed under our coordinated vulnerability disclosure policy. Please visit our [Product Security Incident Response Team (PSIRT)](https://www.nvidia.com/en-us/security/psirt-policies/) policies page for more information.
+For NVIDIA API-related issues, refer to NVIDIA's security guidelines: [NVIDIA Security Vulnerability Submission Form](https://www.nvidia.com/en-us/about-nvidia/security-bulletin/).
 
-## NVIDIA Product Security
+### Supported Versions
 
-For all security-related concerns, please visit NVIDIA's Product Security portal at https://www.nvidia.com/en-us/security
+- **v1.0**: Actively maintained (hackathon prototype).
+- Older versions: Not supported.
+
+### Disclosed Vulnerabilities
+
+No known vulnerabilities at this time.
+
+## Security Considerations for Deployment
+
+- **API Keys**: Never commit `.env` files; use environment variables securely.
+- **Data Privacy**: The project processes sample CRM documents (e.g., contracts, compliance checklists). In production, ensure compliance with laws like CCPA and GDPR.
+- **Dependencies**: Review `requirements.txt` for vulnerabilities using tools like `pip-audit`.
+- **Local Deployment Only**: Designed for localhost (http://localhost:8000/); do not expose publicly without authentication.
+- **NVIDIA NIM API**: Secure your `NVIDIA_API_KEY`; limit usage to prevent quota exhaustion.
+
+## Why This Matters for CRM
+
+In CRM systems, security is critical for handling sensitive data (e.g., contracts, customer info). This project demonstrates basic safeguards, but for production, implement:
+- Authentication (e.g., FastAPI dependencies).
+- Input validation to prevent injection attacks.
+- Logging without exposing PII.
+
+Follow the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md) when reporting issues.
+
+For general questions, use GitHub Issues.
