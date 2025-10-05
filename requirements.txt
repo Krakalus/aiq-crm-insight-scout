@@ -1,10 +1,10 @@
-echo "nvidia-nat
 fastapi
 gradio
 requests
 faiss-cpu
 markdown
 beautifulsoup4
-uvicorn > requirements.txt
-python-dotenv > requirements.txt
-langgraph langchain-openai > requirements.txt
+uvicorn
+python-dotenv
+langgraph
+langchain-openai
