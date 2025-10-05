@@ -17,6 +17,7 @@ Welcome to **AIQ CRM Insight Scout**, a cutting-edge AI-powered CRM assistant cr
 - [Usage](#usage)
 - [Example Queries](#example-queries)
 - [Project Structure](#project-structure)
+- [Flowchart Overview](#flowchart-overview)
 - [Contributing](#contributing)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
@@ -142,6 +143,26 @@ Test the AI’s versatility with these CRM-focused queries:
 - `../data/`: Directory with 9 markdown files as the document corpus.
 - `.env`: Stores NVIDIA API key.
 - `requirements.txt`: Lists Python dependencies.
+
+## 📊 Flowchart Overview
+
+The following flowchart illustrates how **AIQ CRM Insight Scout** processes a user query to deliver CRM insights, from input to output:
+
+<img src="images/application_flow.png" alt="AIQ CRM Insight Scout Flowchart">
+
+- **User Inputs Query**: Starts with a CRM-specific query (e.g., "Summarize contract terms").
+- **Display in Gradio UI**: Shows the interactive interface for input and results.
+- **FastAPI Endpoint /agent**: Routes the query to the LangGraph agent.
+- **LangGraph Agent**: Manages the workflow with *Plan*, *Retrieve*, and *Output* nodes.
+- **LLM: Generate Plan**: Uses NVIDIA Llama-3.1 to create a retrieval strategy.
+- **Retrieve Node**: Calls FastAPI `/retrieve` with FAISS vector search.
+- **Embed Query**: Leverages NVIDIA Embedding API (`nv-embedqa-e5-v5`).
+- **Search Index**: Queries the FAISS Index with preloaded CRM documents.
+- **Return Top-K Docs**: Retrieves the top 3 relevant documents.
+- **Output Node**: Generates the final answer or summary with NVIDIA Llama-3.1.
+- **Return Output**: Displays the result (e.g., "Contract Summary") in the Gradio UI.
+
+This visual breakdown highlights the Agentic AI workflow tailored for CRM efficiency. 
 
 ## 🤝 Contributing
 
