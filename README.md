@@ -1,133 +1,234 @@
-# AI-Q NVIDIA Research Assistant Blueprint
+🚀 AIQ CRM Insight Scout
+Revolutionize CRM with Agentic AI Precision
+Welcome to AIQ CRM Insight Scout, an AI-powered CRM assistant crafted for a hackathon to master Agentic AI in Customer Relationship Management (CRM). This solution harnesses cutting-edge AI to process legal and operational documents, enabling seamless contract management, compliance, and customer support automation. Born from a bold vision to innovate in the CRM industry, this project blends desperation with determination to deliver impactful results for hackathon success!
+🌟 Why AIQ CRM Insight Scout?
 
-## Overview
-
-The AI-Q NVIDIA Research Assistant blueprint allows you to create a deep research assistant that can run on-premise, allowing anyone to create detailed research reports using on-premise data and web search. 
-
-> [!NOTE]
-> To obtain results consistent with the **aiq-research-assistant** [DeepResearch Bench](https://huggingface.co/spaces/Ayanami0730/DeepResearch-Leaderboard) leaderboard results, replace `llama-3.3-nemotron-super-49b-v1` with `llama-3.3-nemotron-super-49b-v1.5`. The updated model weights are available from [Hugging Face](https://huggingface.co/nvidia/Llama-3_3-Nemotron-Super-49B-v1_5) and as an endpoint on [NVIDIA's API Catalog](https://build.nvidia.com/nvidia/llama-3_3-nemotron-super-49b-v1_5). The updated prompt is part of the [develop branch](https://github.com/NVIDIA-AI-Blueprints/aiq-research-assistant/blob/develop/aira/src/aiq_aira/prompts.py#L16).
-
-## Table of Contents
-
-- [Key Features](#key-features)
-- [Target Audience](#target-audience)
-- [Software Components](#software-components)
-- [Technical Diagram](#technical-diagram)
-- [Minimum System Requirements](#minimum-system-requirements)
-  - [OS Requirements](#os-requirements)
-  - [Deploy Options](#deploy-options)
-  - [Drivers](#drivers)
-  - [Hardware Requirements](#hardware-requirements)
-  - [API Keys](#api-keys)
-- [Next Steps](#next-steps)
-- [License](#license)
-- [Security Considerations](#security-considerations)
-
-## Key Features
-
-- **Deep Research**: Given a report topic and desired report structure, an agent (1) creates a report plan, (2) searches data sources for answers, (3) writes a report, (4) reflects on gaps in the report for further queries, (5) finishes a report with a list of sources.
-- **Parallel Search**: During the research phase, multiple research questions are searched in parallel. For each query, the RAG service is consulted and an LLM-as-a-judge is used to check the relevancy of the results. If more information is needed, a fallback web search is performed. This search approach ensures internal documents are given preference over generic web results while maintaining accuracy. Performing query search in parallel allows for many data sources to be consulted in an efficient manner.
-- **Human-in-the-loop**: Human feedback on the report plan, interactive report edits, and Q&A with the final report.
-- **Data Sources**: Integration with the NVIDIA RAG blueprint to search multimodal documents with text, charts, and tables. Optional web search through Tavily.
-- **Demo Web Application**: Frontend web application showcasing end-to-end use of the AI-Q Research Assistant.
-
-## Target Audience
-
-- *Research Analysts:* This blueprint can be deployed by IT organizations to provide an on-premise deep research application for analysts
-- *Developers:* This blueprint serves as a reference architecture for teams to adapt to their own AI research applications  
-
-## Software Components 
-
-The AI-Q Research Assistant blueprint provides these components:
-
-- **Demo Frontend**: A docker container with a fully functional demo web application is provided. This web application is deployed by default if you follow the getting started guides and is the easiest way to quickly experiment with deep research using internal data sources via the NVIDA RAG blueprint. The source code for this demo web application is not distributed. 
-- **Backend Service via RESTful API**: The main AI-Q Research Assistant code is distributed as the `aiq-aira` Python package located in the `/aira` directory. These backend functions are available directly or via a RESTful API.
-- **Middleware Proxy**: An nginx proxy is deployed as part of the getting started guides. This proxy enables frontend web applications to interact with a single backend service. In turn, the proxy routes requests between the NVIDIA RAG blueprint services and the AI-Q Research Assistant service.
-
-Additionally, the blueprint uses these components:
-
-- [**NVIDIA NeMo Agent Toolkit**](https://github.com/NVIDIA/NeMo-Agent-Toolkit)
-  Provides a toolkit for managing a LangGraph codebase. Provides observability, API services and documentation, and easy configuration of different LLMs.
-- [**NVIDIA RAG Blueprint**](https://github.com/NVIDIA-AI-Blueprints/rag)
-  Provides a solution for querying large sets of on-premise multi-modal documents.
-- [**NVIDIA NeMo Retriever Microservices**](https://developer.nvidia.com/nemo-retriever?sortBy=developer_learning_library%2Fsort%2Ffeatured_in.nemo_retriever%3Adesc%2Ctitle%3Aasc&hitsPerPage=12)
-- [**NVIDIA NIM Microservices**](https://developer.nvidia.com/nim?sortBy=developer_learning_library%2Fsort%2Ffeatured_in.nim%3Adesc%2Ctitle%3Aasc&hitsPerPage=12) 
-  Used through the RAG blueprint for multi-modal document ingestion.
-  Provides the foundational LLMs used for report writing and reasoning, including the Llama-3.3-Nemotron-Super-49B-v1 reasoning model.
-- [**Web search powered by Tavily**](https://tavily.com/)
-  Supplements on-premise sources with real-time web search.
-
-## Technical Diagram  
-
-![Architecture Diagram](https://assets.ngc.nvidia.com/products/api-catalog/aiq/diagram.jpg?)
-
-## Minimum System Requirements 
-
-### Disk Space
-
-250 GB minimum
-
-### OS Requirements
-
-Ubuntu 22.04
-
-### Deploy Options 
-
-[Docker Compose](/docs/get-started/get-started-docker-compose.md)    
-[NVIDIA AI Workbench](/deploy/workbench/README.md#start-using-the-deep-research-agent-with-nvidia-ai-workbench)  
-
-### Drivers
-
-NVIDIA Container ToolKit  
-GPU Driver -  530.30.02 or later  
-CUDA version - 12.6 or later  
-
-### Hardware Requirements
-
-#### For running all services locally 
-
-Use | Service(s)| Recommended GPU* 
---- | --- | --- 
-Nemo Retriever Microservices for multi-modal document ingest | `graphic-elements`, `table-structure`, `paddle-ocr`, `nv-ingest`, `embedqa` | 1 x H100 80GB*  <br /> 1 x A100 80GB <br /> 2 x B200
-Reasoning Model for Report Generation and RAG Q&A Retrieval | `llama-3.3-nemotron-super-49b-v1` with a FP8 profile  | 1 x H100 80 GB* <br /> 2 x A100 80GB <br /> 2 x B200
-Instruct Model for Report Generation | `llama-3.3-70b-instruct` | 2 x H100 80GB* <br /> 4 x A100 80GB <br /> 2 x B200
---- | -- | -- 
-**Total** | Entire AI-Q Research Blueprint | 4 x H100 80GB* <br /> 7 x A100 80GB <br /> 4 x B200
-
-*This recommendation is based off of the configuration used to test the blueprint. For alternative configurations, view the [RAG blueprint documentation](https://github.com/NVIDIA-AI-Blueprints/rag?tab=readme-ov-file#minimum-system-requirements).
-
-#### For running with hosted NVIDIA NIM Microservices
-
-This blueprint can be run entirely with hosted NVIDIA NIM Microservices, see [https://build.nvidia.com/](https://build.nvidia.com/) for details.
+Agentic AI Powerhouse: Automates complex CRM tasks like contract analysis and compliance checks with a stateful LangGraph workflow.
+CRM-Focused Innovation: Tackles real-world challenges—managing Data Processing Addendums, Terms of Service, and regulatory compliance (e.g., CCPA, EAR).
+Interactive Demo: A sleek Gradio UI delivers fast, precise answers with processing time metrics, perfect for CRM teams.
 
 
-### API Keys
-- NVIDIA AI Enterprise developer licence required to local host NVIDIA NIM Microservices.
-- NVIDIA [API catalog](https://build.nvidia.com/) or [NGC](https://org.ngc.nvidia.com/setup/personal-keys) API Keys for container download and access to hosted NVIDIA NIM Microservices
-- [TAVILY API Key](https://tavily.com) for optional web search
+[!NOTE]First runs may take 15-20s to build the FAISS index. Subsequent queries average 13-15s, optimized for top_k=3 document retrieval. Focus on the custom (Time: X.Xs) output for accurate timing.
+
+📑 Table of Contents
+
+Key Features
+Motivation
+Development Journey
+Installation
+Usage
+Example Queries
+Project Structure
+Contributing
+License
+Acknowledgments
+Troubleshooting
+Future Improvements
+
+✨ Key Features
+
+📚 Robust Document Corpus: Processes 9 markdown files (contracts, invoices, compliance checklists) simulating real CRM data.
+🤖 Intelligent AI Agent: Retrieves top 3 documents via FAISS, processes with NVIDIA’s Llama-3.1-Nemotron-Nano-8B-v1, and delivers intent-based answers or summaries.
+🖥️ User-Friendly UI: Gradio interface with clear "Answer," "Plan," and "Documents Retrieved" sections, including live processing time (e.g., (Time: 14.3s)).
+⚖️ Compliance Ready: Handles US regulations (CCPA, EAR, FTC Act) for precise legal and operational insights.
+⚡ Optimized Performance: Caches embeddings with @lru_cache and limits retrieval to top_k=3 for fast, relevant responses.
+
+🎯 Motivation
+This project was born to:
+
+Master Agentic AI: Explore autonomous task handling for CRM automation.
+Solve CRM Challenges: Streamline legal document management and ensure compliance with laws like CCPA and EAR.
+Impress at the Hackathon: Build a demo showcasing practical AI integration, proving its value in the CRM industry.
+
+🛠️ Development Journey
+Initial Setup
+
+Backend: FastAPI with LangGraph for stateful agent workflows (plan, retrieve, output).
+AI Stack: NVIDIA NIM API for embeddings (nv-embedqa-e5-v5) and LLM (llama-3.1-nemotron-nano-8b-v1) via OpenAI client.
+Frontend: Gradio UI for interactive query handling.
+Retrieval: FAISS for efficient document search.
+
+Challenges & Solutions
 
 
-## Next Steps
 
-- Use the [Get Started Notebook](/notebooks/get_started_nvidia_api.ipynb) to deploy the blueprint with Docker and interact with the sample web application  
-- Deploy with [Docker Compose](/docs/get-started/get-started-docker-compose.md)  
-- Customize the research assistant starting with the [Local Development Guide](/docs/local-development.md)  
+Challenge
+Solution
 
-## License
 
-This project will download and install additional third-party open source software projects. Review the license terms of these open source projects before use, found in [License-3rd-party.txt](/LICENSE-3rd-party.txt). 
 
-GOVERNING TERMS: The software and materials are governed by [NVIDIA Software License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/) and [Product Specific Terms for AI Product](https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-ai-products/); except as follows: (a) the models, other than the Llama-3.3-Nemotron-Super-49B-v1 model, are governed by the [NVIDIA Community Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-community-models-license/); (b) the Llama-3.3-Nemotron-Super-49B-v1 model is governed by the [NVIDIA Open Model License Agreement](https://developer.download.nvidia.com/licenses/nvidia-open-model-license-agreement-june-2024.pdf), and (c) the NeMo Retriever extraction is released under the [Apache-2.0 license](https://github.com/NVIDIA/nv-ingest/blob/main/LICENSE).
+Embedding Generation
+Cached embeddings with @lru_cache and increased API timeout handling.
 
-ADDITIONAL INFORMATION: For NVIDIA Retrieval QA Llama 3.2 1B Reranking v2 model, NeMo Retriever Graphic Elements v1 model, and NVIDIA Retrieval QA Llama 3.2 1B Embedding v2: [Llama 3.2 Community License Agreement](https://www.llama.com/llama3_2/license/), Built with Llama. For Llama-3.3-70b-Instruct model, [Llama 3.3 Community License Agreement](https://www.llama.com/llama3_3/license/), Built with Llama.
 
-## Security Considerations
+Response Time (13-15s)
+Set top_k=3 for focused retrieval; optimized FAISS indexing.
 
-- The AI-Q Research Assistant Blueprint doesn't generate any code that may require sandboxing.
-- The AI-Q Research Assistant Blueprint is shared as a reference and is provided "as is". The security in the production environment is the responsibility of the end users deploying it. When deploying in a production environment, please have security experts review any potential risks and threats; define the trust boundaries, implement logging and monitoring capabilities, secure the communication channels, integrate AuthN & AuthZ with appropriate access controls, keep the deployment up to date, ensure the containers/source code are secure and free of known vulnerabilities.
-- A frontend that handles AuthN & AuthZ should be in place as missing AuthN & AuthZ could provide ungated access to customer models if directly exposed to e.g. the internet, resulting in either cost to the customer, resource exhaustion, or denial of service.
-- The AI-Q Research Assistant doesn't require any privileged access to the system.
-- The end users are responsible for ensuring the availability of their deployment.
-- The end users are responsible for building the container images and keeping them up to date.
-- The end users are responsible for ensuring that OSS packages used by the developer blueprint are current.
-- The logs from nginx proxy, backend, and demo app are printed to standard out. They can include input prompts and output completions for development purposes. The end users are advised to handle logging securely and avoid information leakage for production use cases.
+
+Confusing Gradio UI
+Added custom (Time: X.Xs) to output; attempted _js override (failed due to TypeError).
+
+
+Document Management
+Expanded corpus to 9 files; removed stale faiss_index.bin for fresh indexing.
+
+
+💻 Installation
+Prerequisites
+
+Python: 3.8+
+pip: Python package manager
+Hardware: GPU recommended for NVIDIA NIM API (e.g., 1x H100 80GB or equivalent for local LLM inference).
+
+Setup Steps
+
+Clone the Repository:
+git clone <your-repo-url>
+cd <repo-directory>
+
+
+Install Dependencies:
+
+Create a virtual environment (optional):python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+
+Install packages:pip install -r requirements.txt
+
+
+Note: If prompted to update pip (e.g., "A new release of pip is available: 25.1.1 -> 25.2"), run:python3 -m pip install --upgrade pip
+
+
+
+
+Configure Environment:
+
+Create a .env file in the root directory:NVIDIA_API_KEY=your_nvidia_api_key_here
+
+
+Obtain your key from NVIDIA API Catalog.
+
+
+Prepare Data:
+
+Ensure ../data/ contains these 9 markdown files:
+xAI_Service_Agreement_Revised.markdown
+xAI_Invoice_Revised.markdown
+xAI_Business_Proposal_Revised.markdown
+Customer_Feedback_Survey.markdown
+Performance_Report_Template.markdown
+Project_Timeline.markdown
+xAI_Data_Processing_Addendum.markdown
+xAI_Terms_of_Service.markdown
+xAI_Compliance_Checklist.markdown
+
+
+
+
+Run the Application:
+python app.py
+
+
+Access the Gradio UI at http://localhost:8000/.
+
+
+
+🚀 Usage
+Interface
+
+Enter Query: Input a question (e.g., "What is the due date for the xAI invoice?") in the "Enter Query" textbox.
+Submit: Click the "Submit" button to process.
+Output:
+Answer: Displays the response with processing time (e.g., "November 4, 2025 (Time: 14.3s)").
+Plan: Shows the agent’s planning step.
+Documents Retrieved: Indicates number of documents used (typically 3).
+
+
+
+🔍 Example Queries
+Test the AI’s versatility with these CRM-focused queries:
+
+
+
+Type
+Query
+Expected Output
+
+
+
+Direct Answer
+What is the timeline for xAI to notify Quantum Dynamics Inc. of a data breach under the DPA?
+"72 hours per CCPA guidelines."
+
+
+Summary
+Summarize contract terms in the Terms of Service.
+A concise overview of key terms (e.g., termination, confidentiality).
+
+
+Compliance
+What are the CCPA compliance requirements in the Compliance Checklist?
+List of requirements: opt-out, record-keeping, impact assessments.
+
+
+Financial
+What is the total cost of the xAI invoice?
+"$38,000, including API subscription ($25,000), integration ($8,000), and training/support ($5,000)."
+
+
+Operational
+What deliverables are expected in Phase 2 of the integration project?
+"Training completion report and pilot launch summary."
+
+
+📂 Project Structure
+
+app.py: Core script with FastAPI, LangGraph agent, and Gradio UI.
+../data/: Directory with 9 markdown files as the document corpus.
+.env: Stores NVIDIA API key.
+requirements.txt: Lists Python dependencies.
+
+🤝 Contributing
+This hackathon project welcomes contributions! Submit issues or pull requests via the repository. Let’s build the future of CRM AI together!
+📜 License
+Open-source for hackathon purposes unless otherwise specified. Review dependencies in requirements.txt for third-party licenses.
+🙌 Acknowledgments
+
+xAI: Inspiration from Grok 3’s Agentic AI capabilities.
+NVIDIA: API access for embeddings and LLM inference.
+Hackathon Organizers: For providing a platform to innovate.
+The Developer: Fueled by relentless drive to master CRM AI!
+
+🛠️ Troubleshooting
+
+
+
+Issue
+Solution
+
+
+
+Document not found
+Ensure all 9 markdown files are in ../data/.
+
+
+API Key Error
+Verify NVIDIA_API_KEY in .env matches NVIDIA API Catalog.
+
+
+Timeout
+Increase timeout in requests.post (line 196, app.py) or optimize network.
+
+
+TypeError
+Report errors with logs to the repository for support.
+
+
+🔮 Future Improvements
+
+UI Enhancement: Replace Gradio’s default progress bar with Server-Sent Events (SSE) for smoother feedback.
+Performance: Precompute embeddings for faster startup (under 10s).
+Corpus Expansion: Add more CRM documents (e.g., SLAs, audit logs) for broader use cases.
+Compliance Depth: Integrate more regulations (e.g., GDPR, HIPAA) for global CRM applicability.
+
+Built with 💪 by a passionate CRM innovator—Ready to transform the industry!
