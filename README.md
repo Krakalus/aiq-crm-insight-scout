@@ -148,7 +148,7 @@ Test the AI’s versatility with these CRM-focused queries:
 
 The following flowchart illustrates how **AIQ CRM Insight Scout** processes a user query to deliver CRM insights, from input to output:
 
-<img src="images/application_flow.png" alt="AIQ CRM Insight Scout Flowchart">
+<img src="images/CRM Insight Scout Flowchart.png" alt="AIQ CRM Insight Scout Flowchart">
 
 - **User Inputs Query**: Starts with a CRM-specific query (e.g., "Summarize contract terms").
 - **Display in Gradio UI**: Shows the interactive interface for input and results.
