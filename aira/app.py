@@ -18,12 +18,14 @@ from typing import TypedDict, List
 import httpx
 import asyncio
 from functools import lru_cache
+from langsmith import traceable, Client  # Added Client for trace access
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 load_dotenv()  # Load variables from .env file
+logger.debug(f"LangSmith API Key: {os.getenv('LANGCHAIN_API_KEY')[:4]}...")  # Debug env load
 
 app = FastAPI()
 
@@ -162,11 +164,12 @@ agent = graph.compile()
 
 # Agent endpoint with LangGraph
 @app.post("/agent")
+@traceable  # Enable LangSmith tracing for this endpoint
 async def process_agent(goal: Query):
     try:
         logger.debug(f"Processing goal: {goal.text}")
         state = {"goal": goal.text}
-        result = await agent.ainvoke(state)
+        result = await agent.ainvoke(state, {"configurable": {"thread_id": goal.text[:10]}})  # Thread for session context
         steps = [
             f"Plan: {result['plan']}",
             f"Retrieved: {len(result.get('results', []))} documents",
@@ -180,17 +183,19 @@ async def process_agent(goal: Query):
 # Gradio UI function
 def run_agent(goal):
     if not goal.strip():
-        return "Please enter a query.", "", ""
+        return "Please enter a query.", "No trace data available.", ""
     start_time = time.time()
     response = requests.post("http://localhost:8000/agent", json={"text": goal}, timeout=60)
     processing_time = time.time() - start_time
     if response.status_code == 500:
-        return f"Error: Agent failed to process the query. (Time: {processing_time:.1f}s)", "", ""
+        return f"Error: Agent failed. (Time: {processing_time:.1f}s)", "No trace data available.", ""
     result = response.json()
     steps = result["steps"].split("\n")
     plan = next((s.split(": ")[1] for s in steps if s.startswith("Plan:")), "No plan available.")
     retrieved = next((s.split(": ")[1] for s in steps if s.startswith("Retrieved:")), "No documents retrieved.")
     output = result["output"]
+    thread_id = goal[:10]
+   
     return f"{output} (Time: {processing_time:.1f}s)"
 
 # Mount Gradio UI to FastAPI
@@ -199,6 +204,9 @@ with gr.Blocks() as demo:
     query_input = gr.Textbox(label="Enter Query", placeholder="e.g., Summarize contract terms")
     with gr.Row():
         output_result = gr.Textbox(label="Answer", interactive=False, lines=5)
+    
+    with gr.Row():
+        trace_frame = gr.HTML(label="Trace Details", value="")
     gr.Button("Submit").click(
         fn=run_agent,
         inputs=query_input,
