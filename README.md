@@ -95,7 +95,7 @@ This project was born to:
      ```
      NVIDIA_API_KEY=your_nvidia_api_key_here
      ```
-   - Obtain your key from [NVIDIA API Catalog](https://integrate.api.nvidia.com/).
+   - Obtain your key from [NVIDIA API Catalog](https://build.nvidia.com/).
 
 4. **Prepare Data**:
    - Ensure `../data/` contains these 9 markdown files:
